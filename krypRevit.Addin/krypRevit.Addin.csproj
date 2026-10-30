@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Revit 2024 add-in. Targets .NET Framework 4.8 (required by Revit 2024). -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6F1C2B7A-3D4E-4B8A-9C1D-2E5F7A8B9C01}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>krypRevit.Addin</RootNamespace>
+    <AssemblyName>krypRevit.Addin</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <RevitVersion>2024</RevitVersion>
+    <RevitInstallDir Condition="'$(RevitInstallDir)' == ''">C:\Program Files\Autodesk\Revit $(RevitVersion)</RevitInstallDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Security" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="RevitAPI">
+      <HintPath>$(RevitInstallDir)\RevitAPI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RevitAPIUI">
+      <HintPath>$(RevitInstallDir)\RevitAPIUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.cs" />
+    <Compile Include="Modelling\EditAction.cs" />
+    <Compile Include="Modelling\ModellingRules.cs" />
+    <Compile Include="Chat\ChatProtocol.cs" />
+    <Compile Include="Chat\ProviderClient.cs" />
+    <Compile Include="Chat\RevitChatTools.cs" />
+    <Compile Include="Chat\KeyStore.cs" />
+    <Compile Include="Chat\ChatForm.cs" />
+    <Compile Include="RibbonIcons.cs" />
+    <Compile Include="Bridge.cs" />
+    <Compile Include="HttpServer.cs" />
+    <Compile Include="Endpoints\Health.cs" />
+    <Compile Include="Endpoints\ListHosts.cs" />
+    <Compile Include="Json.cs" />
+    <Compile Include="Endpoints\Model.cs" />
+    <Compile Include="Endpoints\UnitConversion.cs" />
+    <Compile Include="Endpoints\Plans.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Crystal.png">
+      <LogicalName>krypRevit.Addin.Assets.Crystal.png</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Chat.png"><LogicalName>krypRevit.Addin.Assets.Chat.png</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Assets\Review.png"><LogicalName>krypRevit.Addin.Assets.Review.png</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Assets\Status.png"><LogicalName>krypRevit.Addin.Assets.Status.png</LogicalName></EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

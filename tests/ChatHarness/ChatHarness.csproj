@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../krypRevit.Addin/Modelling/EditAction.cs" Link="EditAction.cs" />
+    <Compile Include="../../krypRevit.Addin/Modelling/ModellingRules.cs" Link="ModellingRules.cs" />
+    <Compile Include="../../krypRevit.Addin/Chat/ChatProtocol.cs" Link="ChatProtocol.cs" />
+    <Compile Include="../../krypRevit.Addin/Chat/ProviderClient.cs" Link="ProviderClient.cs" />
+  </ItemGroup>
+</Project>

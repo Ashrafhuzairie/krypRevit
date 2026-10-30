@@ -1,0 +1,64 @@
+krypRevit 0.4.0 — prompts that produce native model actions
+
+Use a saved disposable project first. Replace bracketed names with actual loaded
+types/levels from your model; ask the assistant to inspect them before proposing.
+Dimensions below are wall-centerline/internal-coordinate dimensions, not clear
+room dimensions. If you need clear dimensions, specify that and the actual types.
+
+1. CREATE A SMALL MODEL
+"Inspect my model levels and wall/floor types first. Using [level name at internal
+Z=0], [basic wall type] and [floor type], propose four walls forming a 5 m by 4 m
+wall-centerline rectangle at internal origin (0,0,0), aligned with internal X/Y,
+with 3 m wall heights and one floor. Use native unit conversion. Ask me if any
+specified type or level is unavailable."
+
+The assistant should stage FIVE actions. Click Review & apply and confirm. Then
+check the actual created count/IDs, Show in 3D, dimensions and types. One Revit Undo
+should undo the whole batch. The example does not create new wall/floor types.
+
+2. EDIT EXISTING 3D GEOMETRY
+Select a wall, then:
+"Inspect the selected wall and propose moving it +500 mm along internal X.
+Keep Y/Z unchanged."
+
+Or, for a straight basic wall:
+"Inspect the selected wall baseline. Propose extending its end by 1 m along its
+existing direction, preserving its start and base elevation."
+
+3. EDIT A PARAMETER
+"Inspect the selected wall's actual parameter IDs, constraints and units. If its
+unconnected height is writable, propose setting it to 3,500 mm. Otherwise explain
+which constraint prevents that edit."
+
+4. PLACE A LOADED FAMILY
+"Find loaded [family/type name] under Furniture. If it is an unhosted one-level
+nonstructural family, propose placing it on [level name] at internal XYZ
+(2 m, 1 m, [explicit Z matching your desired model position]). Ask for missing
+coordinates or type choices."
+
+Doors/windows needing hosts, adaptive/work-plane/in-place/two-level and structural
+family placement are not implemented by this operation. Never treat a rejected
+proposal as a successful placement.
+
+5. CREATE A LEVEL, THEN MODEL ON IT
+"Propose a level named [new unique name] at internal elevation 3,000 mm."
+Approve it first. Then ask the assistant to inspect that level and use its actual
+ID in a separate wall/floor proposal. Plan views are not automatically created.
+
+6. CHANGE INSTANCE TYPE
+"Inspect the selected instance's valid replacement types. Show me the choices,
+then propose changing it to [actual valid type name]."
+
+Every edit requires human review/approval; there is no AI apply tool. Requests
+with more than ten actions or multiple edits to one target need staged batches.
+Do not equate pending_review with completed modelling. A committed result reports
+actual created/modified IDs and read-back geometry/parameter values. Later manual
+edits or Undo can make that commit snapshot obsolete.
+
+LIMITS / VALIDATION
+The package compiles against real Revit 2024 API references. Linux tests check
+protocols, input rules and geometry validation only. Native Revit operations,
+actual unit conversion, constraints, worksharing, 3D view switching and Undo have
+not been run here. Complete REVIT-VALIDATION.md on your Windows/Revit machine
+before using working documents. If an operation fails, copy its exact error and
+the prompt/result so it can be diagnosed; do not bypass an error or approval.

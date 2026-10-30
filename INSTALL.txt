@@ -1,0 +1,22 @@
+krypRevit 0.4.0 — built-in AI assistant for Revit 2024
+
+Use the copy-only NoAdmin ZIP. Close Revit before replacing files.
+
+Existing working installation: replace DLL and PDB in your per-user folder:
+C:\Users\md.ashraf\AppData\Roaming\Autodesk\Revit\Addins\2024\krypRevit
+Keep your existing manifest if its full DLL path is correct; do not add a duplicate.
+
+Fresh installation: copy both krypRevit.addin and the krypRevit folder from the
+ZIP's Revit-Addins-2024 directory into your per-user Revit Addins/2024 folder.
+The manifest Assembly must identify the DLL file, not just its containing folder.
+Disable old RevitSem/AequAI/duplicate manifests by moving them outside Addins.
+
+Restart Revit > krypRevit > AI Chat. Select OpenAI, Claude or Gemini, enter a key
+and a model enabled for your account, then Send. Saving the key is optional and
+uses Windows-user encryption. No Python/external MCP client is needed for this UI.
+Review proposed edits using Review & apply; no AI tool can apply automatically.
+
+The unsigned custom add-in and provider access remain subject to company policy.
+Do not change policy to bypass an IT block. See README and REVIT-VALIDATION.md.
+
+After applying a modelling proposal, click Show in 3D in the chat to inspect physical results. See MODELLING-EXAMPLES.txt and REVIT-VALIDATION.md.

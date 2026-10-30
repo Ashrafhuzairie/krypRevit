@@ -1,0 +1,4 @@
+# Merge into ~/.codex/config.toml; replace <you> and adjust the checkout directory.
+[mcp_servers.kryprevit]
+command = "C:\\Users\\<you>\\krypRevit\\.venv\\Scripts\\python.exe"
+args = ["C:\\Users\\<you>\\krypRevit\\mcp_server\\server.py"]

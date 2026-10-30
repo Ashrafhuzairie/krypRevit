@@ -1,0 +1,272 @@
+{
+  "build_date_utc": "2026-10-30",
+  "configuration": "Release",
+  "sdk": {
+    "version": "8.0.427",
+    "name": "dotnet-sdk-linux-x64.tar.gz",
+    "rid": "linux-x64",
+    "url": "https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.427/dotnet-sdk-8.0.427-linux-x64.tar.gz",
+    "hash": "85725692f465f5024b9b42a159a29d9f73e8c57ad9e8bfe1e7028a505d18031d68931e8aa3f9de44145b08170dde897c8a78e1aa18d4219698b6891af7095d39"
+  },
+  "assembly": {
+    "name": "krypRevit.Addin",
+    "version": "0.4.0.0",
+    "target_framework": ".NETFramework,Version=v4.8",
+    "machine": "I386",
+    "cor_flags": "ILOnly",
+    "references": [
+      {
+        "name": "mscorlib",
+        "version": "4.0.0.0"
+      },
+      {
+        "name": "RevitAPIUI",
+        "version": "24.0.0.0"
+      },
+      {
+        "name": "RevitAPI",
+        "version": "24.0.0.0"
+      },
+      {
+        "name": "System.Windows.Forms",
+        "version": "4.0.0.0"
+      },
+      {
+        "name": "PresentationCore",
+        "version": "4.0.0.0"
+      },
+      {
+        "name": "System",
+        "version": "4.0.0.0"
+      },
+      {
+        "name": "System.Web.Extensions",
+        "version": "4.0.0.0"
+      },
+      {
+        "name": "System.Net.Http",
+        "version": "4.2.0.0"
+      },
+      {
+        "name": "WindowsBase",
+        "version": "4.0.0.0"
+      },
+      {
+        "name": "System.Core",
+        "version": "4.0.0.0"
+      },
+      {
+        "name": "System.Security",
+        "version": "4.0.0.0"
+      },
+      {
+        "name": "System.Drawing",
+        "version": "4.0.0.0"
+      },
+      {
+        "name": "System.Web",
+        "version": "4.0.0.0"
+      }
+    ],
+    "resources": [
+      {
+        "name": "krypRevit.Addin.Assets.Crystal.png",
+        "length": 1005372,
+        "sha256": "4f11b79487921fc6dac125d0c4c4e48dbb3da7aac1a9fcb7b8f22344b7ed0752"
+      },
+      {
+        "name": "krypRevit.Addin.Assets.Chat.png",
+        "length": 1095316,
+        "sha256": "8bd6b0fa26fd7d9e5d1b444038c148dfd88c3d88d4531707d7534030e3d60097"
+      },
+      {
+        "name": "krypRevit.Addin.Assets.Review.png",
+        "length": 1037603,
+        "sha256": "e2aaa0eff2586be9d9674cbf5283f4d60bf3c86261f835031bd3f858c18c76b8"
+      },
+      {
+        "name": "krypRevit.Addin.Assets.Status.png",
+        "length": 849360,
+        "sha256": "43ae70396c577ac5da00e27b2302b942b954eba41a381a5b2542f03c57b47a08"
+      }
+    ],
+    "modelling_api_references": [
+      "Autodesk.Revit.ApplicationServices.Application.get_ShortCurveTolerance",
+      "Autodesk.Revit.ApplicationServices.Application.get_VersionNumber",
+      "Autodesk.Revit.ApplicationServices.ControlledApplication.add_DocumentChanged",
+      "Autodesk.Revit.ApplicationServices.ControlledApplication.remove_DocumentChanged",
+      "Autodesk.Revit.Attributes.TransactionAttribute..ctor",
+      "Autodesk.Revit.Creation.ItemFactoryBase.NewFamilyInstance",
+      "Autodesk.Revit.DB.APIObject.get_IsReadOnly",
+      "Autodesk.Revit.DB.BoundaryValidation.IsValidHorizontalBoundary",
+      "Autodesk.Revit.DB.BoundingBoxXYZ.get_Max",
+      "Autodesk.Revit.DB.BoundingBoxXYZ.get_Min",
+      "Autodesk.Revit.DB.Category.get_CategoryType",
+      "Autodesk.Revit.DB.Category.get_Id",
+      "Autodesk.Revit.DB.Category.get_Name",
+      "Autodesk.Revit.DB.CompoundStructure.GetWidth",
+      "Autodesk.Revit.DB.Curve.get_IsBound",
+      "Autodesk.Revit.DB.Curve.GetEndPoint",
+      "Autodesk.Revit.DB.CurveLoop..ctor",
+      "Autodesk.Revit.DB.CurveLoop.Append",
+      "Autodesk.Revit.DB.Definition.get_Name",
+      "Autodesk.Revit.DB.Definition.GetDataType",
+      "Autodesk.Revit.DB.Document.get_Application",
+      "Autodesk.Revit.DB.Document.get_Create",
+      "Autodesk.Revit.DB.Document.get_IsFamilyDocument",
+      "Autodesk.Revit.DB.Document.get_IsModifiable",
+      "Autodesk.Revit.DB.Document.get_IsReadOnly",
+      "Autodesk.Revit.DB.Document.get_IsValidObject",
+      "Autodesk.Revit.DB.Document.get_Title",
+      "Autodesk.Revit.DB.Document.GetElement",
+      "Autodesk.Revit.DB.Document.Regenerate",
+      "Autodesk.Revit.DB.Element.ChangeTypeId",
+      "Autodesk.Revit.DB.Element.get_BoundingBox",
+      "Autodesk.Revit.DB.Element.get_Category",
+      "Autodesk.Revit.DB.Element.get_Document",
+      "Autodesk.Revit.DB.Element.get_GroupId",
+      "Autodesk.Revit.DB.Element.get_Id",
+      "Autodesk.Revit.DB.Element.get_LevelId",
+      "Autodesk.Revit.DB.Element.get_Location",
+      "Autodesk.Revit.DB.Element.get_Name",
+      "Autodesk.Revit.DB.Element.get_Parameters",
+      "Autodesk.Revit.DB.Element.get_Pinned",
+      "Autodesk.Revit.DB.Element.get_UniqueId",
+      "Autodesk.Revit.DB.Element.GetTypeId",
+      "Autodesk.Revit.DB.Element.GetValidTypes",
+      "Autodesk.Revit.DB.Element.set_Name",
+      "Autodesk.Revit.DB.ElementId.get_InvalidElementId",
+      "Autodesk.Revit.DB.ElementId.get_Value",
+      "Autodesk.Revit.DB.ElementId.op_Inequality",
+      "Autodesk.Revit.DB.ElementTransformUtils.CopyElement",
+      "Autodesk.Revit.DB.ElementTransformUtils.MoveElement",
+      "Autodesk.Revit.DB.ElementTransformUtils.RotateElement",
+      "Autodesk.Revit.DB.ElementType.get_FamilyName",
+      "Autodesk.Revit.DB.FailureHandlingOptions.SetClearAfterRollback",
+      "Autodesk.Revit.DB.FailureHandlingOptions.SetFailuresPreprocessor",
+      "Autodesk.Revit.DB.FailureHandlingOptions.SetForcedModalHandling",
+      "Autodesk.Revit.DB.FailureMessageAccessor.GetDescriptionText",
+      "Autodesk.Revit.DB.FailuresAccessor.GetFailureMessages",
+      "Autodesk.Revit.DB.Family.get_FamilyPlacementType",
+      "Autodesk.Revit.DB.Family.get_IsInPlace",
+      "Autodesk.Revit.DB.FamilySymbol.Activate",
+      "Autodesk.Revit.DB.FamilySymbol.get_Family",
+      "Autodesk.Revit.DB.FamilySymbol.get_IsActive",
+      "Autodesk.Revit.DB.FilteredElementCollector..ctor",
+      "Autodesk.Revit.DB.FilteredElementCollector.OfClass",
+      "Autodesk.Revit.DB.FilteredElementCollector.WhereElementIsElementType",
+      "Autodesk.Revit.DB.FilteredElementCollector.WhereElementIsNotElementType",
+      "Autodesk.Revit.DB.FilteredElementCollector.WhereElementIsViewIndependent",
+      "Autodesk.Revit.DB.Floor.Create",
+      "Autodesk.Revit.DB.FloorType.get_IsFoundationSlab",
+      "Autodesk.Revit.DB.ForgeTypeId.get_TypeId",
+      "Autodesk.Revit.DB.ForgeTypeId.op_Equality",
+      "Autodesk.Revit.DB.GeometryObject.op_Equality",
+      "Autodesk.Revit.DB.HostObjAttributes.GetCompoundStructure",
+      "Autodesk.Revit.DB.Level.Create",
+      "Autodesk.Revit.DB.Level.get_Elevation",
+      "Autodesk.Revit.DB.Level.get_ProjectElevation",
+      "Autodesk.Revit.DB.Line.CreateBound",
+      "Autodesk.Revit.DB.Line.CreateUnbound",
+      "Autodesk.Revit.DB.LocationCurve.get_Curve",
+      "Autodesk.Revit.DB.LocationCurve.set_Curve",
+      "Autodesk.Revit.DB.LocationPoint.get_Point",
+      "Autodesk.Revit.DB.Parameter.AsDouble",
+      "Autodesk.Revit.DB.Parameter.AsElementId",
+      "Autodesk.Revit.DB.Parameter.AsInteger",
+      "Autodesk.Revit.DB.Parameter.AsString",
+      "Autodesk.Revit.DB.Parameter.AsValueString",
+      "Autodesk.Revit.DB.Parameter.get_Definition",
+      "Autodesk.Revit.DB.Parameter.get_HasValue",
+      "Autodesk.Revit.DB.Parameter.get_Id",
+      "Autodesk.Revit.DB.Parameter.get_StorageType",
+      "Autodesk.Revit.DB.Parameter.GetUnitTypeId",
+      "Autodesk.Revit.DB.Parameter.Set",
+      "Autodesk.Revit.DB.Transaction..ctor",
+      "Autodesk.Revit.DB.Transaction.Commit",
+      "Autodesk.Revit.DB.Transaction.GetFailureHandlingOptions",
+      "Autodesk.Revit.DB.Transaction.SetFailureHandlingOptions",
+      "Autodesk.Revit.DB.Transaction.Start",
+      "Autodesk.Revit.DB.UnitTypeId.get_Centimeters",
+      "Autodesk.Revit.DB.UnitTypeId.get_CubicFeet",
+      "Autodesk.Revit.DB.UnitTypeId.get_CubicMeters",
+      "Autodesk.Revit.DB.UnitTypeId.get_Degrees",
+      "Autodesk.Revit.DB.UnitTypeId.get_Feet",
+      "Autodesk.Revit.DB.UnitTypeId.get_Inches",
+      "Autodesk.Revit.DB.UnitTypeId.get_Meters",
+      "Autodesk.Revit.DB.UnitTypeId.get_Millimeters",
+      "Autodesk.Revit.DB.UnitTypeId.get_Radians",
+      "Autodesk.Revit.DB.UnitTypeId.get_SquareFeet",
+      "Autodesk.Revit.DB.UnitTypeId.get_SquareMeters",
+      "Autodesk.Revit.DB.UnitUtils.ConvertToInternalUnits",
+      "Autodesk.Revit.DB.UnitUtils.IsMeasurableSpec",
+      "Autodesk.Revit.DB.View.get_IsTemplate",
+      "Autodesk.Revit.DB.View3D.get_IsPerspective",
+      "Autodesk.Revit.DB.Wall.Create",
+      "Autodesk.Revit.DB.Wall.get_WallType",
+      "Autodesk.Revit.DB.WallType.get_Kind",
+      "Autodesk.Revit.DB.WallType.get_Width",
+      "Autodesk.Revit.DB.XYZ..ctor",
+      "Autodesk.Revit.DB.XYZ.DistanceTo",
+      "Autodesk.Revit.DB.XYZ.get_X",
+      "Autodesk.Revit.DB.XYZ.get_Y",
+      "Autodesk.Revit.DB.XYZ.get_Z",
+      "Autodesk.Revit.DB.XYZ.GetLength",
+      "Autodesk.Revit.DB.XYZ.IsWithinLengthLimits",
+      "Autodesk.Revit.DB.XYZ.Normalize",
+      "Autodesk.Revit.UI.ButtonData.set_Image",
+      "Autodesk.Revit.UI.ButtonData.set_LargeImage",
+      "Autodesk.Revit.UI.ExternalCommandData.get_Application",
+      "Autodesk.Revit.UI.ExternalEvent.Create",
+      "Autodesk.Revit.UI.ExternalEvent.Dispose",
+      "Autodesk.Revit.UI.ExternalEvent.Raise",
+      "Autodesk.Revit.UI.PushButtonData..ctor",
+      "Autodesk.Revit.UI.RibbonItemData.set_ToolTip",
+      "Autodesk.Revit.UI.RibbonPanel.AddItem",
+      "Autodesk.Revit.UI.Selection.Selection.GetElementIds",
+      "Autodesk.Revit.UI.Selection.Selection.SetElementIds",
+      "Autodesk.Revit.UI.TaskDialog..ctor",
+      "Autodesk.Revit.UI.TaskDialog.AddCommandLink",
+      "Autodesk.Revit.UI.TaskDialog.set_CommonButtons",
+      "Autodesk.Revit.UI.TaskDialog.set_DefaultButton",
+      "Autodesk.Revit.UI.TaskDialog.set_MainContent",
+      "Autodesk.Revit.UI.TaskDialog.set_MainInstruction",
+      "Autodesk.Revit.UI.TaskDialog.Show",
+      "Autodesk.Revit.UI.UIApplication.get_ActiveUIDocument",
+      "Autodesk.Revit.UI.UIApplication.get_Application",
+      "Autodesk.Revit.UI.UIApplication.get_MainWindowHandle",
+      "Autodesk.Revit.UI.UIControlledApplication.CreateRibbonPanel",
+      "Autodesk.Revit.UI.UIControlledApplication.CreateRibbonTab",
+      "Autodesk.Revit.UI.UIControlledApplication.get_ControlledApplication",
+      "Autodesk.Revit.UI.UIDocument.get_Document",
+      "Autodesk.Revit.UI.UIDocument.get_Selection",
+      "Autodesk.Revit.UI.UIDocument.set_ActiveView",
+      "Autodesk.Revit.UI.UIDocument.ShowElements"
+    ],
+    "entry_point": "krypRevit.Addin.App",
+    "review_command": "krypRevit.Addin.ReviewCommand",
+    "chat_command": "krypRevit.Addin.ShowChatCommand",
+    "chat_window": "krypRevit.Addin.Chat.ChatForm"
+  },
+  "dll_sha256": "fa73a53b2455eb863ac828db04a5231c1a4c6587a081604f6a61e4e04931f52b",
+  "repeat_build_identical": true,
+  "compiler_warnings": 0,
+  "compiler_errors": 0,
+  "reference_source": "NuGet.org; Nice3point community Revit 2024 compile-time reference packages (not bundled with the release)",
+  "packages": [
+    {
+      "file": "microsoft.netframework.referenceassemblies.net48.1.0.3.nupkg",
+      "sha256": "8a7e348538e7eb91351696911689f49e3d4f63f8bab517432bbe159b8b1104a2"
+    },
+    {
+      "file": "nice3point.revit.api.revitapi.2024.0.0.nupkg",
+      "sha256": "52917499eedf32a9aeb57a959cb43a16c48b809af3946e3d272244275ecfa70f"
+    },
+    {
+      "file": "nice3point.revit.api.revitapiui.2024.0.0.nupkg",
+      "sha256": "c7f4d01607d09ed200ab53ea5aed1206faf4a1bd9b8d70d05809c679b410229d"
+    }
+  ],
+  "package_signature_verification": "dotnet nuget verify --all exited 0; author/repository signatures checked without disabling verification. NU3018/NU3028 warnings: certificate revocation endpoints were unreachable, so revocation status could not be established.",
+  "runtime_validation": "Not loaded or exercised inside Revit; Windows installer not executed on Windows."
+}

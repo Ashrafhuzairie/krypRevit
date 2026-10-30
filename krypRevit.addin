@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>krypRevit</Name>
+    <Assembly>krypRevit\krypRevit.Addin.dll</Assembly>
+    <AddInId>7D2E4C1A-5B3F-4E8A-9A6C-1F0B2D3E4A57</AddInId>
+    <FullClassName>krypRevit.Addin.App</FullClassName>
+    <VendorId>KRYP</VendorId>
+    <VendorDescription>krypRevit reviewed AI model editing</VendorDescription>
+  </AddIn>
+</RevitAddIns>
