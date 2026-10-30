@@ -1,15 +1,18 @@
-# krypRevit for Revit 2024
+# Download krypRevit 0.3.0 — built-in AI Chat restored
 
-The compiled copy-only package is [releases/krypRevit-NoAdmin-v0.2.2.zip](releases/krypRevit-NoAdmin-v0.2.2.zip). Open the file on GitHub and choose **Download raw file** to download the actual ZIP. Do not use Save page as. The adjacent SHA-256 file can be used to check integrity.
+- [Compiled copy-only ZIP](releases/krypRevit-NoAdmin-v0.3.0.zip) — built-in chat, distinct command icons, no Python needed for chat.
+- [Complete source ZIP](releases/krypRevit-source-v0.3.0.zip) — current C# project and test harnesses.
 
-Close Revit, extract the ZIP, and follow START-HERE.txt. Copy the contents of Revit-Addins-2024 into:
+Open a ZIP on GitHub and choose **Download raw file**. Do not use Save page as. Adjacent SHA-256 files are provided for integrity checks.
+
+Close Revit and replace the DLL/PDB in your existing per-user installation:
 
 ```text
-C:\Users\md.ashraf\AppData\Roaming\Autodesk\Revit\Addins\2024
+C:\Users\md.ashraf\AppData\Roaming\Autodesk\Revit\Addins\2024\krypRevit
 ```
 
-The DLL already includes green crystal icons for MCP Status and Review actions. No compiler, PowerShell installer or administrator-created HTTP URL reservation is needed. Company permission to load custom unsigned add-ins is still required.
+Keep your existing manifest if its Assembly path is correct; do not add a duplicate. Restart Revit and open **krypRevit > AI Assistant > AI Chat**. Select OpenAI, Claude or Gemini, enter a provider API key and an enabled model. Saving the key is optional and uses Windows-user encryption.
 
-This is an external MCP bridge, not a built-in chat window. Optional AI-client setup is described in AI-client/CONNECT.txt inside the package.
+AI Chat has a speech-bubble icon, Review actions a checklist/checkmark, and MCP Status a plug/connection icon. MCP is optional; the built-in chat does not need a separate MCP client or Python. Model edits still require your review and native Revit confirmation.
 
-Build: Release, .NET Framework 4.8, Revit API 24.0, zero compiler warnings/errors. Repeated DLL build hashes matched and the embedded icon hash was checked. The 23 MCP/transport tests passed for unchanged functional components; icon rendering, Revit model actions and Windows deployment remain untested. Test on a disposable model first.
+The Release build passed with zero warnings/errors. Fourteen chat protocol checks plus twenty-three MCP/transport tests passed. The actual Windows GUI, provider accounts and Revit model behavior remain untested here; validate on a disposable model. Company restrictions on custom add-ins and provider access still apply.
