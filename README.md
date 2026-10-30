@@ -1,6 +1,14 @@
-# krypRevit 0.4.0 — AI assistant inside Revit 2024
+# krypRevit 0.6.0 — AI assistant inside Revit 2024
 
-This version restores a **built-in AI Chat window**. The earlier 0.2.x rebuild contained only the external MCP bridge; it did not include chat. Version 0.4.0 adds native chat with OpenAI, Claude and Gemini, while retaining reviewed model editing and the optional external MCP connection.
+This version restores a **built-in AI Chat window**. The earlier 0.2.x rebuild contained only the external MCP bridge; it did not include chat. Version 0.6.0 adds native chat with OpenAI, Claude and Gemini, while retaining reviewed model editing and the optional external MCP connection.
+
+## Fixes and opening tools in 0.6.0
+
+- Numeric IDs such as `697693` now resolve directly through Revit ElementId lookup, not through wall/type name searches. `inspect_element` also accepts a numeric string; the dedicated `get_element_by_id` tool returns the canonical UniqueId and active document. IDs are 64-bit and document-specific. Linked service IDs are handled by the opening planner with link_id.
+- `delete_element` is supported as a single-target, deletion-only proposal. A native delete is previewed in a transaction that is explicitly rolled back. The complete affected dependency list (maximum 50) must be confirmed; protected types/links/groups/levels/views and pinned/grouped targets/dependencies are rejected. The actual delete set must exactly match the preview or the transaction rolls back. Deleted IDs are reported only after commit.
+- The chat's Review/Show controls are disabled when no corresponding plan/results exist. The ribbon Review command is available only for a pending plan.
+- The optional external bridge moved from browser-blocked port 5060 to **HTTP `http://127.0.0.1:8765/`**, not HTTPS. A browser may read a basic status/version response at `/`; model routes still require the client marker and reject browser origins. The endpoint is not a chat website. Built-in AI Chat connects directly to Revit and does not depend on it. Update an explicit KRYPREVIT_BRIDGE override if an external MCP client still uses the old port.
+- **Opening rules** inside the chat configures rectangular clearances and the circular mapping/cap. [Opening documentation](OPENING-RULES.md) describes actual cutting methods and limits.
 
 ## Use inside Revit
 
@@ -31,6 +39,8 @@ The assistant has native model-write operations, not just model reading:
 | Edit parameters | Writable instance text/integer/double parameters; no ElementId/reference edits |
 | Move / rotate / copy | Eligible existing instances, with 3D vectors/axes |
 | Change type | A valid existing replacement type for an instance; no edits to type definitions |
+| Delete instance | One eligible physical target, explicit full-dependency preview/confirmation, maximum 50 affected elements |
+| Service openings | Configured rectangular/circular cuts in supported walls/slabs; details in OPENING-RULES.md |
 | Reshape walls | Edit the baseline endpoints of an existing straight basic wall, preserving its base elevation |
 
 The native APIs include Wall.Create, Floor.Create, Level.Create, Document.NewFamilyInstance, Element.ChangeTypeId, LocationCurve.Curve, Parameter.Set, ElementTransformUtils and Transaction.Commit. Compile-time references are checked in BUILD-INFO.json; they do not establish live Revit execution.
@@ -41,14 +51,14 @@ The assistant first inspects actual IDs, coordinates, dimensions, levels, loaded
 
 Committed results report actual created/modified IDs, parameter values and geometry read back after commit. A read-back/notification error no longer relabels a successful commit as a failed transaction. Status is a record of the commit; later Undo/edits may make that snapshot obsolete. **Show in 3D** selects and zooms to surviving physical results in an existing isometric 3D view, without creating a view or model elements. Level datums are not shown by that helper. These controls are human-operated and are not AI apply tools.
 
-Unsupported: arbitrary code, deletion, type-definition editing/creation, linked/pinned/grouped edits, reference parameters, hosted/adaptive family placement, general structural/MEP/roof/stair modelling, floor holes/slopes, family-editor modelling and automatic SEM opening detection. Use actual available model types; if a requested type/operation is missing, the assistant should explain that instead of claiming success.
+Unsupported: arbitrary code, protected/bulk mixed deletion, type-definition editing/creation, linked/pinned/grouped edits, reference parameters, hosted/adaptive family placement, general structural/MEP/roof/stair modelling, floor holes/slopes, family-editor modelling and unsupported angled/curved/merged penetration cases (see OPENING-RULES.md). Use actual available model types; if a requested type/operation is missing, the assistant should explain that instead of claiming success.
 
 See MODELLING-EXAMPLES.txt for concrete prompts and verification steps.
 
 ## Copy-only upgrade (no administrator installer)
 
 1. Close Revit 2024.
-2. Download `releases/krypRevit-NoAdmin-v0.4.0.zip` from GitHub using Download raw file, then extract it.
+2. Download `releases/krypRevit-NoAdmin-v0.6.0.zip` from GitHub using Download raw file, then extract it.
 3. For an existing working krypRevit installation, replace the DLL and PDB in:
 
    ```text
@@ -80,6 +90,7 @@ Chat protocol and geometry checks (requires .NET 8 SDK; no real API calls):
 ```sh
 dotnet run --project tests/ChatHarness/ChatHarness.csproj -c Release
 dotnet run --project tests/ModellingHarness/ModellingHarness.csproj -c Release
+dotnet run --project tests/OpeningRulesHarness/OpeningRulesHarness.csproj -c Release
 ```
 
 This links the production conversation/provider code to mocked HTTP/model-tool dispatch, checking all three providers, native tool exchanges, schema normalization, cancellation, error recovery, no AI apply tool, context changes, bounded tool loops and a canned-provider metric-room modelling flow. The fake provider/dispatcher verifies plumbing, not real model geometry. The test-only JSON adapter is .NET 8; the production DLL uses the .NET Framework serializer.
@@ -92,8 +103,8 @@ python -m venv .venv
 KRYPREVIT_DOTNET=/path/to/dotnet .venv/bin/python -m unittest discover -s tests -v
 ```
 
-On Windows use `.venv\Scripts\python` and set the SDK variable in your shell. Fifteen C# transport tests are skipped unless KRYPREVIT_DOTNET is set; the other eleven exercise MCP/client behavior. The optional external MCP server/configuration remains in `mcp_server` and `codex-config.toml`, using 127.0.0.1:5060. It is independent of the built-in chat.
+On Windows use `.venv\Scripts\python` and set the SDK variable in your shell. Twenty C# transport tests are skipped unless KRYPREVIT_DOTNET is set; the other eleven exercise MCP/client behavior. The optional external MCP server/configuration remains in `mcp_server` and `codex-config.toml`, using 127.0.0.1:8765. It is independent of the built-in chat.
 
 ## Validation limits
 
-The .NET Framework 4.8 Release build succeeded with zero warnings/errors. Four embedded icon hashes and the chat entry point/types were checked; a repeat build produced the same DLL hash. Sixteen chat/protocol checks, seventeen input/geometry checks and twenty-six MCP/transport tests passed (59 total). These are compilation/protocol tests: **Windows Forms layout, DPAPI persistence, actual provider accounts, Revit startup/rendering, native unit conversion, model creation/editing, 3D navigation and Undo have not been executed on Windows/Revit here.** Complete `REVIT-VALIDATION.md` on a disposable model before using working documents. Build provenance, package-signature verification limits and checksums are in BUILD-INFO.json.
+The .NET Framework 4.8 Release build succeeded with zero warnings/errors. Four embedded icon hashes and the chat entry point/types were checked; a repeat build produced the same DLL hash. Twenty chat/protocol checks, twenty-six input/ID/deletion checks, nineteen opening-rule checks and thirty-one MCP/transport tests passed (96 total). These are compilation/protocol tests: **Windows Forms layout, DPAPI persistence, actual provider accounts, Revit startup/rendering, native unit conversion, model creation/editing/deletion, rollback previews, service-opening detection/cuts, sketch editing, links, rule-dialog behavior, 3D navigation and Undo have not been executed on Windows/Revit here.** Complete `REVIT-VALIDATION.md` on a disposable model before using working documents. Build provenance, package-signature verification limits and checksums are in BUILD-INFO.json.

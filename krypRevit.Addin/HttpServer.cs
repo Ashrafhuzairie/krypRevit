@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using krypRevit.Addin.Endpoints;
+using krypRevit.Addin.Openings;
 namespace krypRevit.Addin
 {
     // User-mode loopback HTTP transport: no HTTP.sys registration / URL ACL is needed.
@@ -38,7 +39,7 @@ namespace krypRevit.Addin
             while (running)
             {
                 TcpClient client;
-                try { client=await listener.AcceptTcpClientAsync().ConfigureAwait(false); } catch { break; }
+                try { client=await listener.AcceptTcpClientAsync().ConfigureAwait(false); } catch { running=false;break; }
                 if (!workers.Wait(0)) { client.Close(); continue; }
                 clients.TryAdd(client,0);
                 if (!running) { client.Close(); clients.TryRemove(client,out _); workers.Release(); break; }
@@ -111,13 +112,15 @@ namespace krypRevit.Addin
                 try
                 {
                     var req=Read(stream);
-                    if (req.Headers.ContainsKey("Origin") || !req.Headers.TryGetValue("X-krypRevit-Client",out var marker) || marker != "mcp")
+                    if(req.Url.AbsolutePath=="/" && req.Method=="GET" && !req.Headers.ContainsKey("Origin"))
+                    {body=Json.Serialize(new {ok=true,service="krypRevit optional external MCP bridge",version=typeof(HttpServer).Assembly.GetName().Version.ToString(),transport="HTTP on loopback",assistant="Open Revit > krypRevit > AI Chat. Built-in chat does not need this endpoint. Model routes require the MCP client header."});}
+                    else if (req.Headers.ContainsKey("Origin") || !req.Headers.TryGetValue("X-krypRevit-Client",out var marker) || marker != "mcp")
                     { status=403; body=Json.Error("Use the krypRevit local MCP client; browser requests are not accepted."); }
                     else
                     {
                         var path=req.Url.AbsolutePath.TrimEnd('/').ToLowerInvariant();
                         var query=HttpUtility.ParseQueryString(req.Url.Query);
-                        var method=(path == "/plans" || path == "/units") ? "POST" : "GET";
+                        var method=(path == "/plans" || path == "/units" || path=="/openings/plan") ? "POST" : "GET";
                         if (req.Method != method) { status=405; body=Json.Error("Method not allowed."); }
                         else switch (path)
                         {
@@ -129,7 +132,8 @@ namespace krypRevit.Addin
                             case "/model":
                                 int limit;
                                 if (!int.TryParse(query["limit"] ?? "100",out limit) || limit < 1 || limit > 500) throw new ArgumentException("Limit must be 1–500.");
-                                var uid=query["unique_id"];
+                                var uid=query["element_id"] ?? query["unique_id"];
+                                if(query["element_id"]!=null && query["unique_id"]!=null) throw new ArgumentException("Specify element_id or unique_id, not both.");
                                 body=await bridge.Invoke(app => Model.Run(app,uid,limit)).ConfigureAwait(false); break;
                             case "/search":
                                 int searchLimit;
@@ -137,12 +141,13 @@ namespace krypRevit.Addin
                                 bool includeTypes;
                                 if(!bool.TryParse(query["include_types"] ?? "false",out includeTypes)) throw new ArgumentException("include_types must be boolean.");
                                 body=await bridge.Invoke(app=>Model.Search(app,query["query"],query["category"],searchLimit,includeTypes)).ConfigureAwait(false);break;
+                            case "/opening-rules":body=Json.Serialize(new {ok=true,rules=OpeningRuleStore.Load()});break;
                             case "/plans/status": body=await bridge.Invoke(app => Plans.Status()).ConfigureAwait(false); break;
-                            case "/plans":case "/units":
+                            case "/plans":case "/units":case "/openings/plan":
                                 if (!req.Headers.TryGetValue("Content-Type",out var contentType) ||
                                     !string.Equals(contentType.Split(';')[0].Trim(),"application/json",StringComparison.OrdinalIgnoreCase))
                                     throw new ArgumentException("Expected application/json.");
-                                body=path=="/plans" ? await bridge.Invoke(app => Plans.Propose(app,req.Body)).ConfigureAwait(false) : await bridge.Invoke(app=>UnitConversion.Run(req.Body)).ConfigureAwait(false);break;
+                                body=path=="/plans" ? await bridge.Invoke(app => Plans.Propose(app,req.Body)).ConfigureAwait(false) : path=="/openings/plan" ? await bridge.Invoke(app=>Plans.PlanOpenings(app,req.Body)).ConfigureAwait(false) : await bridge.Invoke(app=>UnitConversion.Run(req.Body)).ConfigureAwait(false);break;
                             default: status=404; body=Json.Error("Route not found."); break;
                         }
                     }

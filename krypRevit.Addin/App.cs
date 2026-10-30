@@ -51,12 +51,13 @@ namespace krypRevit.Addin
                 RibbonIcons.Apply(data,"Status");
                 panel.AddItem(data);
                 var review = new PushButtonData("krypRevitReview", "Review & apply", typeof(App).Assembly.Location, typeof(ReviewCommand).FullName);
+                review.AvailabilityClassName=typeof(PendingPlanAvailability).FullName;
                 review.ToolTip = "Review and approve the AI's proposed model changes";
                 RibbonIcons.Apply(review,"Review");
                 panel.AddItem(review);
                 app.ControlledApplication.DocumentChanged += OnDocumentChanged;
 
-                Server = new HttpServer(Bridge, port: 5060);
+                Server = new HttpServer(Bridge, port: 8765);
                 try {Server.Start();}
                 catch(Exception ex) {TaskDialog.Show("krypRevit","Built-in AI Chat is ready. The optional external MCP listener could not start: "+ex.Message);}
                 return Result.Succeeded;
@@ -91,7 +92,7 @@ namespace krypRevit.Addin
         {
             var running = App.Server != null && App.Server.IsRunning;
             TaskDialog.Show("krypRevit",
-                running ? "Built-in AI Chat is ready. External MCP bridge running on http://127.0.0.1:5060" : "Built-in AI Chat is ready. Optional external MCP bridge is not running.");
+                running ? "Built-in AI Chat is ready: click the AI Chat button.\n\nOptional external MCP bridge: listening at http://127.0.0.1:8765/ (HTTP, not HTTPS). The root URL shows basic bridge status; model routes are for the MCP client." : "Built-in AI Chat is ready: click the AI Chat button.\n\nOptional external MCP listener is unavailable. Built-in chat connects directly to Revit and does not need this listener.");
             return Result.Succeeded;
         }
     }
@@ -120,5 +121,13 @@ namespace krypRevit.Addin
             try {App.ShowChat(data.Application);return Autodesk.Revit.UI.Result.Succeeded;}
             catch(System.Exception ex) {message=ex.Message;return Autodesk.Revit.UI.Result.Failed;}
         }
+    }
+}
+
+namespace krypRevit.Addin
+{
+    public class PendingPlanAvailability : Autodesk.Revit.UI.IExternalCommandAvailability
+    {
+        public bool IsCommandAvailable(Autodesk.Revit.UI.UIApplication app,Autodesk.Revit.DB.CategorySet categories) => Endpoints.Plans.HasPending(app);
     }
 }

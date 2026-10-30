@@ -53,6 +53,7 @@ namespace krypRevit.Addin.Chat
                             var message=error==null ? "" : Data.Text(error,"message");
                             if(message.Length>0) detail=message.Replace(key,"[redacted]");
                         } catch { }
+                        if(service=="OpenAI" && ((int)response.StatusCode==403 || (int)response.StatusCode==404)) detail+=" Select a model enabled for this API project in the editable Model field.";
                         if(detail.Length>600) detail=detail.Substring(0,600);
                         throw new InvalidOperationException($"HTTP {(int)response.StatusCode} from {service}: {detail}");
                     }

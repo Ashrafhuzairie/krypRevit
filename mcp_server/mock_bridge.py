@@ -78,7 +78,7 @@ class H(BaseHTTPRequestHandler):
         pass
 
 
-def make_server(port=5060):
+def make_server(port=8765):
     server = HTTPServer(("127.0.0.1", port), H)
     server.plan = {"ok": True, "state": "none", "mock": True}
     return server

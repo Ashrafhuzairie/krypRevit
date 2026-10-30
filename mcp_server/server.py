@@ -5,7 +5,7 @@ from urllib.parse import urlsplit
 import httpx
 from mcp.server.fastmcp import FastMCP
 
-BRIDGE_URL = os.environ.get("KRYPREVIT_BRIDGE", "http://127.0.0.1:5060").rstrip("/")
+BRIDGE_URL = os.environ.get("KRYPREVIT_BRIDGE", "http://127.0.0.1:8765").rstrip("/")
 _url = urlsplit(BRIDGE_URL)
 if (_url.scheme != "http" or _url.hostname != "127.0.0.1" or _url.username
         or _url.password or _url.path or _url.query or _url.fragment):
@@ -59,12 +59,23 @@ def inspect_model(limit: int = 100) -> dict:
 
 @mcp.tool()
 def inspect_element(unique_id: str) -> dict:
-    """Read an element's parameters, IDs, storage types, values, specs and read-only flags.
+    """Read by actual UniqueId OR numeric ElementId string, returning parameters, canonical IDs and geometry.
 
     Double values use Revit internal units (feet for length, radians for angle;
     other specs have other internal units). Do not infer units from the display string.
     """
     return _request("GET", "/model", params={"unique_id": unique_id})
+
+
+@mcp.tool()
+def get_element_by_id(element_id: str) -> dict:
+    """Resolve numeric Revit ElementId directly in the active document and return its UniqueId and details.
+
+    Use for prompts like 'delete wall 697693'; never search names for the number.
+    """
+    if not element_id.isascii() or not element_id.isdigit() or not 0 < int(element_id) <= 9223372036854775807:
+        return {"ok": False, "error": "Supply a positive 64-bit ElementId as digits."}
+    return _request("GET", "/model", params={"element_id": element_id})
 
 
 @mcp.tool()
@@ -87,6 +98,28 @@ def convert_units(values: list[float], unit: Literal["mm", "cm", "m", "ft", "in"
 
 
 @mcp.tool()
+def get_opening_rules() -> dict:
+    """Read user opening size rules. Edit using Opening rules in the built-in chat; all units mm."""
+    return _request("GET", "/opening-rules")
+
+
+@mcp.tool()
+def plan_service_openings(service_ids: list[str] | None = None, host_ids: list[str] | None = None,
+                          link_id: str | None = None, service_kind: Literal["all", "cable_tray", "trunking", "pipe", "duct", "conduit"] = "all",
+                          shape: Literal["auto", "rectangular", "circular"] = "auto") -> dict:
+    """Detect and stage openings for human Review & apply; no cut is committed here.
+
+    Select straight services in Revit or supply service_ids. link_id reads services from a loaded
+    Revit link; walls/slabs always belong to the active model. host_ids narrows the host scope.
+    Requires perpendicular services, straight vertical basic walls or horizontal slabs.
+    Uses saved per-side rules/table (circular cap 200 mm). Trunking is cable tray type-name matching.
+    Skipped candidates are reported. Maximum 100 services, 1000 hosts, 10 openings per batch.
+    """
+    return _request("POST", "/openings/plan", payload={"service_ids": service_ids, "host_ids": host_ids,
+                    "link_id": link_id, "service_kind": service_kind, "shape": shape})
+
+
+@mcp.tool()
 def propose_actions(actions: list[dict]) -> dict:
     """Stage 1–10 model edits for explicit human review inside Revit. This DOES NOT APPLY edits.
 
@@ -103,7 +136,9 @@ def propose_actions(actions: list[dict]) -> dict:
     Inspect catalogs/geometry and call convert_units before planning. New element IDs cannot be referenced in the same batch.
     Wall endpoints must have Z equal to the selected level elevation. Basic, nonstructural walls only.
     Inspect actual element/parameter/type IDs and units first; never invent them.
-    No arbitrary code, deletion, type-definition edits, linked/pinned/grouped-element edits.
+    create_service_opening: host unique_id, service_unique_id, optional link_unique_id and opening_shape (auto/rectangular/circular). Prefer plan_service_openings for detection/sizing. Must be opening-only batch.
+    delete_element: unique_id (or resolved numeric ID). Must be the sole action; native cascade preview is rolled back, then ALL listed removals require human approval. At most 50 affected elements.
+    No arbitrary code, protected-element deletion, type-definition edits, linked/pinned/grouped-element edits.
     Pending plans expire in ten minutes and become stale after a document change.
     Tell the user to click krypRevit > Review & apply in Revit, then query plan_status.
     Never claim success before state is applied. Do not retry an uncertain proposal without checking status.

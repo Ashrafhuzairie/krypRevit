@@ -1,20 +1,16 @@
-# Download krypRevit 0.4.0 — prompt-driven modelling
+# Download krypRevit 0.6.0 — openings, numeric IDs and built-in chat
 
-- [Compiled copy-only ZIP](releases/krypRevit-NoAdmin-v0.4.0.zip)
-- [Complete source ZIP](releases/krypRevit-source-v0.4.0.zip)
+- [Compiled copy-only ZIP](releases/krypRevit-NoAdmin-v0.6.0.zip)
+- [Complete source ZIP](releases/krypRevit-source-v0.6.0.zip)
 
-Open a ZIP on GitHub and choose **Download raw file**. Adjacent SHA-256 files verify integrity.
+Open a ZIP on GitHub and choose **Download raw file**. Close Revit and replace the DLL/PDB in your existing per-user krypRevit folder. Keep the existing manifest if its full DLL path is correct; do not add a duplicate. Restart and check the AI Chat window title shows 0.6.0.
 
-Close Revit and replace the DLL/PDB in your existing folder:
+**Opening rules** inside AI Chat configures the clearances and table. Cable tray defaults: 50 mm left/right and 25 mm top/bottom. Trunking: 25 mm all sides, identified as cable tray family/type containing trunking. Circular service->opening mm: 25->50, 50->80, 80->100, 100->150, 150->200, with a 200 mm cap. Exact matching is default; next-larger matching is an explicit setting.
 
-```text
-C:\Users\md.ashraf\AppData\Roaming\Autodesk\Revit\Addins\2024\krypRevit
-```
+Select services (and optionally hosts), then ask the assistant to read the rules and plan openings. Linked services may be addressed using link_id and service_ids. Review dimensions/skipped candidates and click **Review & apply**. Rectangular/circular cuts are implemented for supported walls/slabs; see [scope, methods and native tests](OPENING-RULES.md). Round wall cuts edit the profile sketch; other supported cases create native Opening elements. Angled/curved/merged cases are excluded.
 
-Keep your current manifest if its full DLL path is correct. Do not add another manifest. Restart Revit > krypRevit > AI Chat, select a provider and enter its API key. Python/external MCP are optional for the built-in chat.
+Numeric IDs such as 697693 now resolve directly in the active project, without a text search or manual UniqueId lookup. Deletion requires a rolled-back full-dependency preview (max 50) and human confirmation, with exact actual-set checking before commit.
 
-This build stages native model actions for walls, floors, levels, loaded unhosted one-level families, instance parameters, 3D moves/rotations/copies, valid type changes and straight-wall reshaping. It inspects real geometry/types and uses Revit unit conversion. Click **Review & apply** and confirm to execute the batch; **Show in 3D** selects/zooms to physical results in an existing isometric view.
+The optional external bridge now uses **HTTP http://127.0.0.1:8765/**, not HTTPS or the old browser-blocked port. The root returns basic service/version JSON. Built-in AI Chat uses direct Revit dispatch and needs neither this listener nor Python. An unavailable OpenAI model still requires choosing one enabled for the API project; no automatic fallback is used.
 
-[Example prompts](MODELLING-EXAMPLES.txt) and [native acceptance steps](REVIT-VALIDATION.md) explain the supported scope and validation. Roofs/stairs/general MEP, hosted/adaptive/structural family creation, arbitrary code, deletion and type-definition creation are not implemented.
-
-Build: zero warnings/errors; repeat DLL hashes matched. **59 protocol/input/transport checks passed**. Actual Revit geometry, unit conversion, constraints, Windows UI/provider accounts and Undo remain untested here. Validate in a saved disposable project before working models.
+Release build: zero warnings/errors; repeat DLL hashes matched. **96 protocol/input/rule/transport checks passed. Native Revit cuts/deletion, sketch rollback, Windows UI, rule persistence and Undo have not been run here.** Test on a saved disposable project using REVIT-VALIDATION.md before working models.

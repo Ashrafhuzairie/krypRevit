@@ -1,4 +1,4 @@
-krypRevit 0.4.0 — built-in AI assistant for Revit 2024
+krypRevit 0.6.0 — built-in AI assistant for Revit 2024
 
 Use the copy-only NoAdmin ZIP. Close Revit before replacing files.
 
@@ -20,3 +20,7 @@ The unsigned custom add-in and provider access remain subject to company policy.
 Do not change policy to bypass an IT block. See README and REVIT-VALIDATION.md.
 
 After applying a modelling proposal, click Show in 3D in the chat to inspect physical results. See MODELLING-EXAMPLES.txt and REVIT-VALIDATION.md.
+
+Opening rules in AI Chat edits per-side mm clearances and the circular size table.
+The optional status endpoint is HTTP http://127.0.0.1:8765/ (not HTTPS). Built-in
+chat does not need the external MCP listener. See OPENING-RULES.md.

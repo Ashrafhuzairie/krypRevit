@@ -1,4 +1,4 @@
-krypRevit 0.4.0 — prompts that produce native model actions
+krypRevit 0.6.0 — prompts that produce native model actions
 
 Use a saved disposable project first. Replace bracketed names with actual loaded
 types/levels from your model; ask the assistant to inspect them before proposing.
@@ -62,3 +62,16 @@ actual unit conversion, constraints, worksharing, 3D view switching and Undo hav
 not been run here. Complete REVIT-VALIDATION.md on your Windows/Revit machine
 before using working documents. If an operation fails, copy its exact error and
 the prompt/result so it can be diagnosed; do not bypass an error or approval.
+
+7. NUMERIC-ID LOOKUP AND REVIEWED DELETION
+“Inspect wall ElementId 697693 in the active project and propose its deletion.”
+Use an actual ID from your model. Verify the direct ID result and the complete
+removal list before confirming. Missing/other-document IDs must not be replaced
+with name matches. The preview itself is rolled back; Undo restores an approved
+delete. Protected targets/dependencies and more than 50 removals are rejected.
+
+8. SERVICE OPENINGS
+Select straight services and optionally the intended wall/slab hosts, then:
+“Read my opening rules and plan openings for the selected services through the
+walls/slabs. Use shape auto and report skipped candidates.”
+See OPENING-RULES.md for linked-service IDs, supported geometry and native tests.

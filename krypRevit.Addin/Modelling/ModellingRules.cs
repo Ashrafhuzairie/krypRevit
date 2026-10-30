@@ -5,8 +5,8 @@ namespace krypRevit.Addin.Endpoints
     // Revit-independent input/geometry checks shared by the proposal layer and tests.
     public static class ModellingRules
     {
-        public static string[] OperationNames => new[]{"set_parameter","move","rotate","copy","create_wall","create_floor","create_level","place_family","change_type","set_wall_curve"};
-        public static bool IsCreation(string operation) => operation=="create_wall" || operation=="create_floor" || operation=="create_level" || operation=="place_family";
+        public static string[] OperationNames => new[]{"set_parameter","move","rotate","copy","create_wall","create_floor","create_level","place_family","change_type","set_wall_curve","delete_element","create_service_opening"};
+        public static bool IsCreation(string operation) => operation=="create_wall" || operation=="create_floor" || operation=="create_level" || operation=="place_family" || operation=="create_service_opening";
         public static double Number(object value)
         {
             if(!(value is double || value is float || value is int || value is long || value is decimal)) throw new ArgumentException("Numeric values must be JSON numbers.");
@@ -28,6 +28,7 @@ namespace krypRevit.Addin.Endpoints
             if(!IsCreation(a.operation)) Required(a.unique_id,"unique_id");
             switch(a.operation)
             {
+                case "create_service_opening":Required(a.unique_id,"host unique_id");Required(a.service_unique_id,"service_unique_id");if(a.opening_shape!="auto"&&a.opening_shape!="rectangular"&&a.opening_shape!="circular")throw new ArgumentException("Invalid opening shape.");break;
                 case "set_parameter":Required(a.parameter_id,"parameter_id");break;
                 case "move":case "copy":if(Distance(Point(a.vector_ft),new double[3])<1e-9) throw new ArgumentException("Translation must be nonzero.");break;
                 case "rotate":

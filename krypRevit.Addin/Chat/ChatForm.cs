@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using krypRevit.Addin.Openings;
 
 namespace krypRevit.Addin.Chat
 {
@@ -22,6 +23,7 @@ namespace krypRevit.Addin.Chat
         private readonly Button stop=new Button { Text="Stop",AutoSize=true,Enabled=false };
         private readonly Button review=new Button { Text="Review & apply",AutoSize=true,UseMnemonic=false };
         private readonly Button show3d=new Button {Text="Show in 3D",AutoSize=true};
+        private readonly Button openingRules=new Button {Text="Opening rules",AutoSize=true};
         private readonly Button reset=new Button { Text="New chat",AutoSize=true };
         private readonly Label status=new Label { Text="Ready",AutoSize=true,Dock=DockStyle.Fill };
         private readonly ProviderClient provider=new ProviderClient();
@@ -29,10 +31,12 @@ namespace krypRevit.Addin.Chat
         private readonly ChatRunner runner;
         private CancellationTokenSource cancellation;
         private bool busy;
+        private bool pendingReview;
+        private bool visualResults;
         public ChatForm(Bridge bridge)
         {
             tools=new RevitChatTools(bridge);runner=new ChatRunner(provider,tools);
-            Text="krypRevit — AI Assistant";Size=new Size(920,720);MinimumSize=new Size(720,540);
+            Text="krypRevit "+typeof(ChatForm).Assembly.GetName().Version.ToString(3)+" — AI Assistant";Size=new Size(920,720);MinimumSize=new Size(720,540);
             StartPosition=FormStartPosition.CenterScreen;AutoScaleMode=AutoScaleMode.Dpi;ShowIcon=false;
             var layout=new TableLayoutPanel { Dock=DockStyle.Fill,Padding=new Padding(12),ColumnCount=1,RowCount=6 };
             layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -48,7 +52,7 @@ namespace krypRevit.Addin.Chat
             options.Controls.Add(save,4,1);options.Controls.Add(forget,5,1);
             var notice=new Label {AutoSize=true,Dock=DockStyle.Fill,Padding=new Padding(0,6,0,8),Text="Messages and requested model information go to the selected AI provider. Model edits require your review and confirmation. Ctrl+Enter sends."};
             var buttons=new FlowLayoutPanel {AutoSize=true,Dock=DockStyle.Fill,Padding=new Padding(0,4,0,4)};
-            buttons.Controls.AddRange(new Control[]{send,stop,review,show3d,reset});
+            buttons.Controls.AddRange(new Control[]{send,stop,review,show3d,openingRules,reset});
             layout.Controls.Add(options,0,0);layout.Controls.Add(notice,0,1);layout.Controls.Add(transcript,0,2);
             layout.Controls.Add(input,0,3);layout.Controls.Add(buttons,0,4);layout.Controls.Add(status,0,5);Controls.Add(layout);
             service.Items.AddRange(new object[]{"OpenAI","Claude","Gemini"});
@@ -57,15 +61,18 @@ namespace krypRevit.Addin.Chat
             save.Click += (s,e) => SaveKey();forget.Click += (s,e) => ForgetKey();
             send.Click += async (s,e) => await SendAsync();stop.Click += (s,e) => cancellation?.Cancel();
             review.Click += async (s,e) => await ReviewAsync();
+            openingRules.Click += async (s,e) => {using(var form=new OpeningRulesForm())form.ShowDialog(this);await RefreshPlanControlsAsync();};
             show3d.Click += async (s,e) => await ShowIn3DAsync();
             reset.Click += (s,e) => {runner.Reset();transcript.Clear();Welcome();};
             input.KeyDown += async (s,e) => {if(e.Control && e.KeyCode==Keys.Enter) {e.SuppressKeyPress=true;await SendAsync();}};
+            Shown += async (s,e) => await RefreshPlanControlsAsync();
+            Activated += async (s,e) => {if(!busy) await RefreshPlanControlsAsync();};
             FormClosing += (s,e) => cancellation?.Cancel();
             FormClosed += (s,e) => {provider.Dispose();cancellation?.Dispose();key.Clear();};
-            service.SelectedIndex=0;Welcome();
+            service.SelectedIndex=0;Welcome();SetBusy(false);
         }
         private string Service => (string)service.SelectedItem;
-        private void Welcome() => Append("krypRevit","Ask me about your Revit model or request a supported edit. I can inspect and find elements, create walls/floors/levels, place loaded unhosted families, change instance types, reshape straight walls, and edit/move/rotate/copy elements. Click Review & apply to approve a proposal. Enter a provider API key to begin; saving it is optional.");
+        private void Welcome() => Append("krypRevit","Ask me about your Revit model or request a supported edit. I can plan service openings using Opening rules, resolve numeric ElementIds, and inspect/find elements, create walls/floors/levels, place loaded unhosted families, change instance types, reshape straight walls, and edit/move/rotate/copy elements or preview deletion of an eligible model instance and its dependencies. Click Review & apply to approve a proposal. Enter a provider API key to begin; saving it is optional.");
         private void LoadProvider()
         {
             runner.Reset();key.Clear();model.Text=ProviderClient.DefaultModel(Service);
@@ -85,8 +92,8 @@ namespace krypRevit.Addin.Chat
         }
         private void SetBusy(bool value)
         {
-            busy=value;send.Enabled=!value;review.Enabled=!value;reset.Enabled=!value;service.Enabled=!value;
-            show3d.Enabled=!value;model.Enabled=!value;key.Enabled=!value;save.Enabled=!value;forget.Enabled=!value;input.Enabled=!value;stop.Enabled=value;
+            busy=value;send.Enabled=!value;review.Enabled=!value && pendingReview;reset.Enabled=!value;service.Enabled=!value;
+            openingRules.Enabled=!value;show3d.Enabled=!value && visualResults;model.Enabled=!value;key.Enabled=!value;save.Enabled=!value;forget.Enabled=!value;input.Enabled=!value;stop.Enabled=value;
         }
         private void Append(string role,string text)
         {
@@ -107,7 +114,20 @@ namespace krypRevit.Addin.Chat
             catch(OperationCanceledException) {Append("krypRevit","Request stopped or timed out. Use Review & apply to check any proposal already staged. No chat tool can apply edits automatically.");}
             catch(HttpRequestException) {Append("Connection","Could not reach "+selected+". Check your company network/proxy and approved provider access.");}
             catch(Exception ex) {Append("Error",ex.Message.Replace(apiKey,"[redacted]"));}
-            finally {if(!IsDisposed) {SetBusy(false);status.Text="Ready";input.Focus();}}
+            finally {await RefreshPlanControlsAsync();if(!IsDisposed) {SetBusy(false);status.Text="Ready";input.Focus();}}
+        }
+        private async Task RefreshPlanControlsAsync()
+        {
+            if(IsDisposed || Disposing) return;
+            try
+            {
+                var data=Json.Deserialize<Dictionary<string,object>>(await tools.PlanStatusAsync());
+                if(IsDisposed || Disposing) return;
+                pendingReview=Data.Text(data,"state")=="pending_review";
+                visualResults=Data.Text(data,"state")=="applied" && (Data.Items(Data.Get(data,"created_unique_ids")).Any() || Data.Items(Data.Get(data,"modified_unique_ids")).Any());
+            }
+            catch {pendingReview=false;visualResults=false;}
+            if(!IsDisposed && !Disposing) {review.Enabled=!busy && pendingReview;show3d.Enabled=!busy && visualResults;}
         }
         private async Task ShowIn3DAsync()
         {
@@ -115,7 +135,7 @@ namespace krypRevit.Addin.Chat
             cancellation?.Dispose();cancellation=new CancellationTokenSource();
             try {var result=Json.Deserialize<Dictionary<string,object>>(await tools.ShowIn3DAsync(cancellation.Token));Append("Revit","Selected "+Data.Get(result,"count")+" result element(s) in "+Data.Text(result,"view")+".");}
             catch(Exception ex) {Append("Revit",ex.Message);}
-            finally {if(!IsDisposed) {SetBusy(false);status.Text="Ready";}}
+            finally {await RefreshPlanControlsAsync();if(!IsDisposed) {SetBusy(false);status.Text="Ready";}}
         }
         private async Task ReviewAsync()
         {
@@ -128,7 +148,7 @@ namespace krypRevit.Addin.Chat
                 string text;
                 switch(state)
                 {
-                    case "applied":text=$"Committed {Data.Items(Data.Get(data,"created_unique_ids")).Count()} created and {Data.Items(Data.Get(data,"modified_unique_ids")).Count()} modified element(s). Click Show in 3D to inspect physical results; Revit Undo can undo the batch.";if(!string.IsNullOrEmpty(Data.Text(data,"result_warning"))) text+=" "+Data.Text(data,"result_warning");break;
+                    case "applied":text=$"Committed {Data.Items(Data.Get(data,"created_unique_ids")).Count()} created, {Data.Items(Data.Get(data,"modified_unique_ids")).Count()} modified and {Data.Items(Data.Get(data,"deleted_unique_ids")).Count()} deleted element(s). Revit Undo can undo the batch.";if(Data.Items(Data.Get(data,"opening_results")).Any())text+=" Verified service openings: "+Data.Items(Data.Get(data,"opening_results")).Count()+".";if(!string.IsNullOrEmpty(Data.Text(data,"result_warning"))) text+=" "+Data.Text(data,"result_warning");break;
                     case "cancelled":text="Proposal cancelled. No changes applied.";break;
                     case "stale":text="Proposal expired or the document changed. Ask for a fresh proposal.";break;
                     case "failed":text="Batch failed: "+Data.Text(data,"error");break;
@@ -138,7 +158,7 @@ namespace krypRevit.Addin.Chat
                 Append("Review",text);
             }
             catch(Exception ex) {Append("Review",ex.Message);}
-            finally {if(!IsDisposed) {SetBusy(false);status.Text="Ready";}}
+            finally {await RefreshPlanControlsAsync();if(!IsDisposed) {SetBusy(false);status.Text="Ready";}}
         }
     }
 }

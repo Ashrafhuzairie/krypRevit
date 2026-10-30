@@ -5,6 +5,9 @@ namespace krypRevit.Addin.Endpoints
     {
         public string operation { get; set; }
         public string unique_id { get; set; }
+        public string service_unique_id {get;set;}
+        public string link_unique_id {get;set;}
+        public string opening_shape {get;set;}="auto";
         public string parameter_id { get; set; }
         public object value { get; set; }
         public double[] vector_ft { get; set; }

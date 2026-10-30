@@ -15,8 +15,11 @@ namespace krypRevit.Addin.Endpoints
         }
         public static Element Element(Document doc,string uid)
         {
-            if(string.IsNullOrWhiteSpace(uid)) throw new ArgumentException("An element unique_id is required.");
-            return doc.GetElement(uid) ?? throw new ArgumentException("Element no longer exists: "+uid);
+            var reference=ElementReference.Parse(uid);Element result;
+            try {result=reference.NumericId.HasValue ? doc.GetElement(new ElementId(reference.NumericId.Value)) : doc.GetElement(reference.Text);}
+            catch(ArgumentException) {throw new ArgumentException("Invalid Revit element reference. Supply a numeric ElementId or an actual UniqueId, not a name search.");}
+            if(result==null) throw new ArgumentException((reference.NumericId.HasValue ? "ElementId "+reference.NumericId.Value : "UniqueId "+reference.Text)+" was not found in the active project '"+doc.Title+"'. IDs are document-specific; the element may be in another/linked model or may have been deleted. No target was substituted.");
+            return result;
         }
         public static bool CanPlace(FamilySymbol symbol)
         {
@@ -35,7 +38,7 @@ namespace krypRevit.Addin.Endpoints
                     storage=p.StorageType.ToString(),read_only=p.IsReadOnly,value=Value(p),display=p.AsValueString(),
                     data_type=p.Definition.GetDataType().TypeId,display_unit_type=DisplayUnit(p)
                 }).ToArray();
-                return Json.Serialize(new {ok=true,element=Describe(e),parameters,
+                return Json.Serialize(new {ok=true,document=doc.Title,requested_reference=uid,resolved_by=ElementReference.Parse(uid).NumericId.HasValue ? "element_id" : "unique_id",element=Describe(e),parameters,
                     valid_types=e.GetValidTypes().Take(200).Select(id=>doc.GetElement(id)).Where(t=>t!=null).Select(t=>new {unique_id=t.UniqueId,name=t.Name}).ToArray()});
             }
             var selected=app.ActiveUIDocument.Selection.GetElementIds();
@@ -57,6 +60,13 @@ namespace krypRevit.Addin.Endpoints
             if(limit<1 || limit>500) throw new ArgumentException("Limit must be 1-500.");
             if((query ?? "").Length>200 || (category ?? "").Length>200) throw new ArgumentException("Search strings must be at most 200 characters.");
             var doc=Document(app);
+            if(!string.IsNullOrWhiteSpace(query) && query.Trim().All(c=>c>='0' && c<='9'))
+            {
+                var exact=Element(doc,query);
+                bool matchesScope=includeTypes ? exact is ElementType : !(exact is ElementType);
+                bool matchesCategory=string.IsNullOrWhiteSpace(category) || (exact.Category?.Name ?? "").IndexOf(category,StringComparison.OrdinalIgnoreCase)>=0;
+                return Json.Serialize(new {ok=true,resolved_by="element_id",count=matchesScope && matchesCategory ? 1 : 0,truncated=false,elements=matchesScope && matchesCategory ? new[]{Describe(exact)} : new object[0]});
+            }
             var collector=new FilteredElementCollector(doc);
             IEnumerable<Element> candidates=includeTypes ? collector.WhereElementIsElementType().Cast<Element>() : collector.WhereElementIsNotElementType().WhereElementIsViewIndependent().Cast<Element>();
             var matches=candidates

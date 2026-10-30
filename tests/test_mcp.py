@@ -85,7 +85,7 @@ class ProtocolIntegration(unittest.TestCase):
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 names = {t.name for t in (await session.list_tools()).tools}
-                self.assertEqual(names, {"revit_health", "list_hosts", "inspect_model", "inspect_element", "propose_actions", "plan_status", "find_elements", "convert_units"})
+                self.assertEqual(names, {"revit_health", "list_hosts", "inspect_model", "inspect_element", "propose_actions", "plan_status", "find_elements", "convert_units", "get_element_by_id", "get_opening_rules", "plan_service_openings"})
 
                 async def call(name, args=None):
                     result = await session.call_tool(name, args or {})

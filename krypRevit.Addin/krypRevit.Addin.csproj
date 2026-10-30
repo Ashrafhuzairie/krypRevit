@@ -54,7 +54,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
+    <Compile Include="Openings\OpeningRules.cs" />
+    <Compile Include="Openings\OpeningRuleStore.cs" />
+    <Compile Include="Openings\OpeningRulesForm.cs" />
+    <Compile Include="Openings\OpeningService.cs" />
+
     <Compile Include="Modelling\EditAction.cs" />
+    <Compile Include="Modelling\ElementReference.cs" />
+    <Compile Include="Modelling\DeletionRules.cs" />
     <Compile Include="Modelling\ModellingRules.cs" />
     <Compile Include="Chat\ChatProtocol.cs" />
     <Compile Include="Chat\ProviderClient.cs" />

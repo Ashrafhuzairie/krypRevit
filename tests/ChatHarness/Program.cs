@@ -76,6 +76,40 @@ class ModellingTools : IChatTools
         throw new Exception("Unexpected operation "+name);
     }
 }
+class DeletionTools : IChatTools
+{
+    public readonly List<string> Names=new();
+    public PlanRequest Proposal;
+    public Task<string> ContextAsync(CancellationToken token)=>Task.FromResult("fixture-project");
+    public Task<string> ExecuteAsync(string name,Dictionary<string,object> args,CancellationToken token)
+    {
+        Names.Add(name);
+        if(name=="get_element_by_id")
+        {
+            if(Data.Text(args,"element_id")!="697693") throw new Exception("Wrong numeric ID");
+            return Task.FromResult("{\"ok\":true,\"element\":{\"id\":\"697693\",\"unique_id\":\"wall-fixture\",\"category\":\"Walls\"}}");
+        }
+        if(name=="propose_actions")
+        {
+            Proposal=JsonSerializer.Deserialize<PlanRequest>(krypRevit.Addin.Json.Serialize(ToolCatalog.NormalizeProposal(args)));
+            DeletionRules.ValidateBatch(Proposal.actions);foreach(var a in Proposal.actions) ModellingRules.Validate(a,.0026);
+            return Task.FromResult("{\"ok\":true,\"state\":\"pending_review\",\"deletion_preview\":[{\"id\":\"697693\",\"is_target\":true},{\"id\":\"697694\",\"is_target\":false}]}");
+        }
+        throw new Exception("Unexpected tool "+name);
+    }
+}
+class OpeningTools : IChatTools
+{
+    public readonly List<string> Names=new();
+    public Task<string> ContextAsync(CancellationToken token)=>Task.FromResult("fixture-project");
+    public Task<string> ExecuteAsync(string name,Dictionary<string,object> args,CancellationToken token)
+    {
+        Names.Add(name);
+        if(name=="get_opening_rules")return Task.FromResult("{\"ok\":true,\"rules\":{\"cable_tray\":{\"left_mm\":50,\"right_mm\":50,\"top_mm\":25,\"bottom_mm\":25}}}");
+        if(name=="plan_service_openings")return Task.FromResult("{\"ok\":true,\"state\":\"pending_review\",\"opening_plan\":[{\"shape\":\"rectangular\",\"width_mm\":400,\"height_mm\":150}]}");
+        throw new Exception("Unexpected opening tool "+name);
+    }
+}
 class Program
 {
     static int passed;
@@ -192,6 +226,28 @@ class Program
             Check(tools.Proposal.actions.Count==5 && tools.Proposal.actions.Count(a=>a.operation=="create_wall")==4,"Model actions lost");
             Check(tools.Proposal.actions.All(a=>a.level_unique_id=="level-fixture"),"Did not preserve inspected level ID");
             Check(Math.Abs(tools.Proposal.actions[0].height_ft-hgt)<1e-9,"Height changed in pipeline");
+        });
+        await Test("reported wall ID follows direct lookup and reviewed deletion proposal",async()=>{
+            object Call(string name,object args)=>Obj("choices",new[]{Obj("message",Obj("content","","tool_calls",new[]{Obj("id",Guid.NewGuid().ToString("N"),"type","function","function",Obj("name",name,"arguments",krypRevit.Addin.Json.Serialize(args)))}))});
+            var h=new Handler();h.Add(Call("get_element_by_id",Obj("element_id","697693")));h.Add(Call("propose_actions",Obj("actions",new[]{Obj("operation","delete_element","unique_id","wall-fixture")})));h.Add(OpenText("Review the target wall and all listed dependencies before confirming deletion."));
+            using var p=new ProviderClient(h);var t=new DeletionTools();await new ChatRunner(p,t).RunAsync("OpenAI","model","test-only","697693 this is the wall please delete it",(_,_)=>{},CancellationToken.None);
+            Check(t.Names.SequenceEqual(new[]{"get_element_by_id","propose_actions"}),"Searched a name or executed an unapproved delete");
+            Check(t.Proposal.actions.Single().unique_id=="wall-fixture" && t.Proposal.actions.Single().operation=="delete_element","Wrong target or action");
+        });
+        await Test("OpenAI model access failures give actionable advice",async()=>{
+            var h=new Handler();h.Add(Obj("error",Obj("message","Model is unavailable")),HttpStatusCode.NotFound);using var p=new ProviderClient(h);
+            try {await p.SendAsync("OpenAI","bad-model","test-only","system",new[]{new ChatMessage{Role="user",Text="Hi"}},ToolCatalog.All,CancellationToken.None);throw new Exception("Accepted unavailable model");}
+            catch(InvalidOperationException ex){Check(ex.Message.Contains("Model field"),"Missing model-selection advice");}
+        });
+        await Test("opening prompt reads rules and stages through native planner only",async()=>{
+            object Call(string name,object args)=>Obj("choices",new[]{Obj("message",Obj("content","","tool_calls",new[]{Obj("id",Guid.NewGuid().ToString("N"),"type","function","function",Obj("name",name,"arguments",krypRevit.Addin.Json.Serialize(args)))}))});
+            var h=new Handler();h.Add(Call("get_opening_rules",Obj()));h.Add(Call("plan_service_openings",Obj("service_ids",new[]{"123"},"host_ids",new[]{"456"},"shape","auto","service_kind","cable_tray")));h.Add(OpenText("Review the opening size and confirm in Revit."));
+            using var p=new ProviderClient(h);var t=new OpeningTools();await new ChatRunner(p,t).RunAsync("OpenAI","model","test-only","Plan openings for cable tray 123 in wall 456 using my saved rules",(_,_)=>{},CancellationToken.None);
+            Check(t.Names.SequenceEqual(new[]{"get_opening_rules","plan_service_openings"}),"Wrong planner route or automatic cut");
+        });
+        await Test("opening schema exposes scope but no AI apply or rule-write tool",()=>{
+            Check(ToolCatalog.All.Any(t=>t.Name=="plan_service_openings")&&ToolCatalog.All.Any(t=>t.Name=="get_opening_rules"),"Missing opening tools");
+            Check(!ToolCatalog.All.Any(t=>t.Name=="apply_openings"||t.Name=="set_opening_rules"),"Unreviewed action exposed");return Task.CompletedTask;
         });
         Console.WriteLine($"CHAT TESTS PASSED: {passed}");
     }

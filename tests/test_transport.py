@@ -49,6 +49,21 @@ class NativeTransport(unittest.TestCase):
                 chunks.append(block)
         return b"".join(chunks)
 
+    def test_browser_can_read_basic_root_status(self):
+        with httpx.Client(trust_env=False) as client:
+            r = client.get(self.url + "/")
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json()["ok"])
+        self.assertNotIn("document", r.json())
+
+    def test_numeric_id_forwarded_directly(self):
+        r = self.client.get("/model", params={"element_id": "697693"})
+        self.assertEqual(r.json()["uid"], "697693")
+
+    def test_ambiguous_references_rejected(self):
+        r = self.client.get("/model", params={"element_id": "697693", "unique_id": "something-else"})
+        self.assertEqual(r.status_code, 400)
+
     def test_health(self):
         self.assertTrue(self.client.get("/health").json()["transport_harness"])
 
@@ -105,6 +120,17 @@ class NativeTransport(unittest.TestCase):
 
     def test_units_is_post_only(self):
         self.assertEqual(self.client.get("/units").status_code, 405)
+
+    def test_opening_rules_route(self):
+        r = self.client.get("/opening-rules")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()["rules"]["circular"][0]["opening_mm"], 80)
+
+    def test_opening_plan_transport(self):
+        payload = {"service_ids": ["123"], "host_ids": ["456"], "shape": "auto"}
+        r = self.client.post("/openings/plan", json=payload)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()["echo"], payload)
 
     def test_no_apply_route(self):
         self.assertEqual(self.client.get("/apply").status_code, 404)

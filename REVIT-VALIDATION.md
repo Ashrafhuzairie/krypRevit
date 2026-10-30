@@ -11,7 +11,7 @@ Use a disposable saved project copy and an approved provider account. Record the
 7. Force an approved multi-action batch to fail at a later action or at commit. Verify no partial changes persist and errors/warnings roll back the entire batch. Check worksharing ownership, design options and constraints.
 8. Propose then edit/undo/redo the document; the plan must become stale. Switch documents and close/reopen the source document; plans must not apply to the wrong document. Verify ten-minute expiration and pending-plan overwrite protection. A new document context must not reuse the prior chat's model facts.
 9. Keep Revit busy beyond a queued request timeout, then return to idle; an expired queued request must not execute later. Close chat and Revit with work queued; check no crashes, orphaned modal dialogs or unexpected edits.
-10. Run another local process on port 5060 before Revit: the optional external MCP listener should report unavailable while AI Chat remains usable through direct Revit dispatch. Stop the conflicting process and restart Revit for external MCP.
+10. Run another local process on port 8765 before Revit: the optional external MCP listener should report unavailable while AI Chat remains usable through direct Revit dispatch. Stop the conflicting process and restart Revit for external MCP.
 
 Live provider availability, Windows UI/key protection and Revit model behavior cannot be inferred from the Linux mock/protocol results. Automatic SEM opening detection was not implemented in this source release.
 
@@ -26,3 +26,16 @@ Live provider availability, Windows UI/key protection and Revit model behavior c
 7. After a successful commit, close/move a view, undo or delete the created results, then query status and Show in 3D. The status is a commit record; no surviving-result claim should be made when elements no longer exist.
 
 Record actual results/screenshots. These native acceptance checks are the remaining prerequisite to claiming end-to-end modelling readiness.
+
+## Numeric IDs, deletion and HTTP status — not run in Revit here
+
+- Enter “697693 this is the wall please delete it” using an actual current-document wall ID. Verify direct lookup returns the numeric ID, canonical UniqueId and correct document/category, with no text search or request to copy a UniqueId from Properties. Repeat with a missing ID, a different document, and a linked-model ID; no substitute target may be used.
+- For deletion, inspect the complete target/hosted/annotation/sketch dependency list. Cancel and verify the preview transaction restored everything with no committed deletion. Approve a fresh plan and verify exactly that set disappears. One Undo must restore the batch. Test protected/pinned/grouped dependencies and the 50-element cap. Source execution compares the actual removal set before commit; this must be checked natively.
+- With no proposal, Review must be disabled; after a deletion-only result Show in 3D must be disabled. Change the document or expire a plan and verify stale plans cannot execute.
+- With Revit running, visit http://127.0.0.1:8765/ (HTTP, no HTTPS): basic bridge/version JSON should appear. Other model routes must reject unmarked browser requests. Built-in chat must remain usable if the optional listener cannot bind (another process/instance). Check an external MCP client after updating any old explicit port override.
+
+## Service openings / user rules — not run in Revit here
+
+Follow OPENING-RULES.md. Test rectangular and circular openings in both walls and slabs, active and transformed linked services, exact nominal diameter matches, matching tolerance, the 200 mm cap and physical outer-diameter fit. Check cable tray 300x100 -> 400x150 and trunking 100x50 -> 150x100 mm, plus asymmetric margins and local-axis orientation. Test the circular 25->50, 50->80, 80->100, 100->150, 150->200 table in native units.
+
+Verify actual profile voids for round walls (not markers), native Opening elements for other supported combinations, unchanged unrelated sketch loops/geometry, complete through passages, native dimensions and one Undo for the whole group. Cancel/error in sketch mode must close/cancel the edit scope and roll back the entire group. Test unsupported slanted/curved/angled/oval/edge-crossing cases, missing rules, scopes over limits, duplicate service IDs and overlapping penetrations. Confirm skipped candidates are disclosed in the review. Save changed rules, reload the window and verify pending opening plans become stale while existing cuts are not resized.

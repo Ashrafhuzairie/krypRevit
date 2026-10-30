@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><NuGetAudit>false</NuGetAudit></PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../krypRevit.Addin/Modelling/ElementReference.cs" Link="ElementReference.cs" />
+    <Compile Include="../../krypRevit.Addin/Modelling/DeletionRules.cs" Link="DeletionRules.cs" />
     <Compile Include="../../krypRevit.Addin/Modelling/EditAction.cs" Link="EditAction.cs" />
     <Compile Include="../../krypRevit.Addin/Modelling/ModellingRules.cs" Link="ModellingRules.cs" />
   </ItemGroup>
